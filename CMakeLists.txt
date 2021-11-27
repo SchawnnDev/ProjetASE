@@ -14,3 +14,6 @@ add_executable(Medecin ${MEDECIN_SRC})
 
 file(GLOB PATIENT_SRC patient.c asem.c asem.h shm.c shm.h)
 add_executable(Patient ${PATIENT_SRC})
+
+file(GLOB FERMER_SRC fermer.c asem.c asem.h shm.c shm.h)
+add_executable(Fermer ${FERMER_SRC})
