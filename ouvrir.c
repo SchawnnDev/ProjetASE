@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "asem.h"
 #include "shm.h"
 
 // Fichier ouvrir.c à rédiger
@@ -14,7 +13,7 @@ int main (int argc, char *argv []) {
         return 1;
     }
 
-    int n, m, t;
+    int n, m, t, ret;
 
     if((n = atoi(argv[1])) <= 0)
     {
@@ -28,21 +27,33 @@ int main (int argc, char *argv []) {
         return 1;
     }
 
-    if((t = atoi(argv[3])) <= 0)
+    if((t = atoi(argv[3])) < 0)
     {
         fprintf(stderr, "usage: %s : t=%d\n", argv[0], t);
         return 1;
     }
 
-    vaccinodrome_t* vaccinodrome = create_vaccinodrome();
+    ret = 1; // On souhaite utiliser raler() et non debug()
+    vaccinodrome_t* vaccinodrome = create_vaccinodrome(&ret);
+
+    if(ret < 0 || vaccinodrome == NULL)
+    {
+        return -1;
+    }
 
     vaccinodrome->medecins = m;
     vaccinodrome->sieges = n;
     vaccinodrome->temps = t;
 
-    asem_init(&vaccinodrome->waitingRoomFill, "WaitingRoomFill", 1, 0);
-    asem_init(&vaccinodrome->waitingRoomEmpty, "WaitingRoomEmpty", 1, n);
+    if(asem_init(&vaccinodrome->waitingRoom, "WaitingRoom", 1, n) == -1)
+    {
+        raler("asem_init\n");
+    }
 
+    if(asem_init(&vaccinodrome->medecinDisponibles, "medecinDisponibles", 1, 0) == -1)
+    {
+        raler("asem_init\n");
+    }
 
     adebug(1, "Ouverture reussie!");
 

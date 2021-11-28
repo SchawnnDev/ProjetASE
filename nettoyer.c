@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "asem.h"
+#include "shm.h"
 
 // Fichier nettoyer.c à rédiger
 int main (int argc, char *argv []) {
@@ -10,6 +10,32 @@ int main (int argc, char *argv []) {
         fprintf(stderr, "usage: %s : %d args\n", argv[0], argc - 1);
         return 1;
     }
+
+    int ret = 0; // On souhaite utiliser adebug()
+    vaccinodrome_t* vaccinodrome = get_vaccinodrome(&ret);
+
+    if(ret < 0 || vaccinodrome == NULL)
+        return 0;
+
+    if(ret < 0)
+    {
+        adebug(2, "Il n'y a rien a nettoyer.");
+        return 0;
+    }
+
+    asem_destroy(&vaccinodrome->waitingRoom);
+    asem_destroy(&vaccinodrome->medecinDisponibles);
+
+    for (int i = 0; i < vaccinodrome->currMedecins; ++i)
+    {
+        box_t box = vaccinodrome->boxes[i];
+        asem_destroy(&box.termineVaccin);
+        asem_destroy(&box.demandeVaccin);
+    }
+
+    destroy_vaccinodrome(vaccinodrome);
+
+    adebug(2, "Nettoyage reussi!");
 
     return 0;
 }
