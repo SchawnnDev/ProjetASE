@@ -19,6 +19,16 @@ int main (int argc, char *argv []) {
     vaccinodrome->statut = 1;
 
     // TODO: Attendre que tous les clients soient sortis.
+    do {
+
+        for (int i = 0; i < vaccinodrome->currMedecins; ++i)
+        {
+            box_t box = vaccinodrome->boxes[i];
+            asem_post(&box.demandeVaccin);
+        }
+
+        asem_getvalue(&vaccinodrome->waitingRoom, &ret);
+    } while (ret != vaccinodrome->sieges);
 
     destroy_vaccinodrome(vaccinodrome);
 
