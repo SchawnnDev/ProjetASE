@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "asem.h"
+#include "shm.h"
 
 // Fichier ouvrir.c à rédiger
 int main (int argc, char *argv []) {
@@ -32,6 +33,18 @@ int main (int argc, char *argv []) {
         fprintf(stderr, "usage: %s : t=%d\n", argv[0], t);
         return 1;
     }
+
+    vaccinodrome_t* vaccinodrome = create_vaccinodrome();
+
+    vaccinodrome->medecins = m;
+    vaccinodrome->sieges = n;
+    vaccinodrome->temps = t;
+
+    asem_init(&vaccinodrome->waitingRoomFill, "WaitingRoomFill", 1, 0);
+    asem_init(&vaccinodrome->waitingRoomEmpty, "WaitingRoomEmpty", 1, n);
+
+
+    adebug(1, "Ouverture reussie!");
 
     return 0;
 

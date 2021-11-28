@@ -11,5 +11,7 @@ int main (int argc, char *argv []) {
         return 1;
     }
 
+    adebug(1, "Fermeture reussie!");
+
     return 0;
 }
