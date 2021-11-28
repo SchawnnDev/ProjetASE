@@ -32,7 +32,7 @@ vaccinodrome_t *create_vaccinodrome(int *err)
         return NULL;
     }
 
-    if (ftruncate(fd, sizeof(vaccinodrome_t) == -1))
+    if (ftruncate(fd, sizeof(vaccinodrome_t)) == -1)
     {
         PERR("Imppossible de ftruncate", debug);
         return NULL;

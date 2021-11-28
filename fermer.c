@@ -20,6 +20,8 @@ int main (int argc, char *argv []) {
 
     // TODO: Attendre que tous les clients soient sortis.
 
+    destroy_vaccinodrome(vaccinodrome);
+
     adebug(1, "Fermeture reussie!");
 
     return 0;
