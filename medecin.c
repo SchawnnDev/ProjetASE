@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     box_t* box = &vaccinodrome->boxes[numMedecin -1]; //vaccinodrome->boxes[numMedecin - 1];
     box->status = 0;
 
-    memset(&box->demandeVaccin, 0, sizeof(asem_t));
+   // memset(&box->demandeVaccin, 0, sizeof(asem_t));
 
     CHK(asem_init(&box->demandeVaccin, "demandeVaccin", 1, 0));
     CHK(asem_init(&box->termineVaccin, "termineVaccin", 1, 0));
