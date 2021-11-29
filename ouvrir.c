@@ -46,8 +46,6 @@ int main (int argc, char *argv []) {
     vaccinodrome->sieges = n;
     vaccinodrome->temps = t;
 
-   memset(vaccinodrome->boxes, 0, sizeof (box_t) * m);
-
     if(asem_init(&vaccinodrome->waitingRoom, "WaitingRoom", 1, n) == -1)
     {
         raler("asem_init\n");
