@@ -2,6 +2,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 #include "shm.h"
 
 void raler(const char *msg)                 // Une fonction simple pour les erreurs
@@ -45,6 +46,10 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
 
     vaccinodrome = mmap(NULL, totalSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
+    memset(vaccinodrome, 0, totalSize);
+
+    vaccinodrome->boxes = (box_t*) (vaccinodrome + sizeof(vaccinodrome_t));
+
     if (vaccinodrome == MAP_FAILED)
     {
         PERR("Impossible de mmap", debug);
@@ -75,7 +80,6 @@ vaccinodrome_t *get_vaccinodrome(int *err)
 
     if (fd == -1)
     {
-        // error;
         if (errno == ENOENT)
         {
             PERR("Vaccinodrome n'est pas ouvert", debug);
@@ -89,7 +93,7 @@ vaccinodrome_t *get_vaccinodrome(int *err)
 
     // On récupère la taille de la memoire partagee avec fstat
     // Car elle est dynamique.
-    if(fstat(fd, &stat) == -1)
+    if (fstat(fd, &stat) == -1)
     {
         PERR("Impossible de fstat", debug);
         return NULL;

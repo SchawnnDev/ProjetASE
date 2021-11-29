@@ -34,7 +34,7 @@ typedef struct vaccinodrome
 
     int statut; // Statut : 0 => ouvert ; 1 => fermé
 
-    box_t boxes[];
+    box_t* boxes;
 } vaccinodrome_t;
 
 vaccinodrome_t* get_vaccinodrome(int* err);
