@@ -67,7 +67,8 @@ int main(int argc, char *argv[])
 
     // Maintenant qu'on a un medecin, on lui ordonne de nous vacciner
     box.status = 1; // Le box n'est plus disponible
-    box.patient = nom;
+    snprintf(box.patient, 10, "%s", nom);
+    //box.patient = nom;
     asem_post(&box.demandeVaccin);
 
     // On attend que le medecin nous vaccine

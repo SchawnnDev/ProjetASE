@@ -18,7 +18,7 @@ typedef struct box
     asem_t demandeVaccin; // Le patient demande un vaccin
     asem_t termineVaccin; // Le medecin a vaccine le patient
     int status;
-    char *patient;
+    char patient[10];
 } box_t;
 
 typedef struct vaccinodrome
@@ -39,7 +39,7 @@ typedef struct vaccinodrome
 
 vaccinodrome_t* get_vaccinodrome(int* err);
 
-vaccinodrome_t* create_vaccinodrome(int* err);
+vaccinodrome_t* create_vaccinodrome(int* err, int medecins);
 
 void destroy_vaccinodrome(vaccinodrome_t *vaccinodrome);
 

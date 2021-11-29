@@ -1,3 +1,4 @@
+#include <sys/stat.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -8,7 +9,7 @@ void raler(const char *msg)                 // Une fonction simple pour les erre
     perror(msg);
 }
 
-vaccinodrome_t *create_vaccinodrome(int *err)
+vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
 {
     int fd;
     vaccinodrome_t *vaccinodrome;
@@ -32,13 +33,17 @@ vaccinodrome_t *create_vaccinodrome(int *err)
         return NULL;
     }
 
-    if (ftruncate(fd, sizeof(vaccinodrome_t)) == -1)
+    ssize_t totalSize = sizeof(vaccinodrome_t) + medecins * sizeof(box_t);
+
+    adebug(99, "total size = %d", totalSize);
+
+    if (ftruncate(fd, totalSize) == -1)
     {
         PERR("Imppossible de ftruncate", debug);
         return NULL;
     }
 
-    vaccinodrome = mmap(NULL, sizeof(vaccinodrome_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    vaccinodrome = mmap(NULL, totalSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (vaccinodrome == MAP_FAILED)
     {
@@ -61,6 +66,7 @@ vaccinodrome_t *get_vaccinodrome(int *err)
     adebug(99, "get_vaccinodrome()");
     int fd;
     vaccinodrome_t *vaccinodrome;
+    struct stat stat;
     const int debug = *err == 0; // Si err != 0, alors on utilise raler() sinon adebug()
 
     *err = -1;
@@ -80,7 +86,18 @@ vaccinodrome_t *get_vaccinodrome(int *err)
         return NULL;
     }
 
-    vaccinodrome = mmap(NULL, sizeof(vaccinodrome_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+    // On récupère la taille de la memoire partagee avec fstat
+    // Car elle est dynamique.
+    if(fstat(fd, &stat) == -1)
+    {
+        PERR("Impossible de fstat", debug);
+        return NULL;
+    }
+
+    adebug(99, "fstat size = %d", stat.st_size);
+
+    vaccinodrome = mmap(NULL, stat.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (vaccinodrome == MAP_FAILED)
     {

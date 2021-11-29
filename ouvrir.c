@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "shm.h"
 
 // Fichier ouvrir.c à rédiger
@@ -34,7 +35,7 @@ int main (int argc, char *argv []) {
     }
 
     ret = 1; // On souhaite utiliser raler() et non debug()
-    vaccinodrome_t* vaccinodrome = create_vaccinodrome(&ret);
+    vaccinodrome_t* vaccinodrome = create_vaccinodrome(&ret, m);
 
     if(ret < 0 || vaccinodrome == NULL)
     {
@@ -44,6 +45,8 @@ int main (int argc, char *argv []) {
     vaccinodrome->medecins = m;
     vaccinodrome->sieges = n;
     vaccinodrome->temps = t;
+
+   memset(vaccinodrome->boxes, 0, sizeof (box_t) * m);
 
     if(asem_init(&vaccinodrome->waitingRoom, "WaitingRoom", 1, n) == -1)
     {
