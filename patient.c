@@ -69,10 +69,10 @@ int main(int argc, char *argv[])
     box.status = 1; // Le box n'est plus disponible
     snprintf(box.patient, 10, "%s", nom);
     //box.patient = nom;
-    asem_post(&box.demandeVaccin);
+    asem_post(&(box.demandeVaccin));
 
     // On attend que le medecin nous vaccine
-    asem_wait(&box.termineVaccin);
+    asem_wait(&(box.termineVaccin));
 
     // Le client est vaccine !
 

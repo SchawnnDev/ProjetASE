@@ -27,14 +27,14 @@ int main (int argc, char *argv []) {
 
         for (int i = 0; i < vaccinodrome->currMedecins; ++i)
         {
-            box_t box = vaccinodrome->boxes[i];
-            adebug(99, "vaccinodrome->boxes[%d], status=%d, name=%s", i, box.status, box.demandeVaccin.nom);
-            if(box.status != 0) continue;
-            asem_getvalue(&box.demandeVaccin, &ret);
-            adebug(99, "asem_getvalue(&box.demandeVaccin, &ret) => %d", ret);
+            box_t* box = &(vaccinodrome->boxes[i]);
+            adebug(99, "vaccinodrome->boxes[%d], status=%d, name=%s", i, box->status, box->demandeVaccin.nom);
+            if(box->status != 0) continue;
+            asem_getvalue(&(box->demandeVaccin), &ret);
+            adebug(99, "asem_getvalue(&box->demandeVaccin, &ret) => %d", ret);
             if(ret > 1) continue;
-            adebug(99, "asem_post box.demandeVaccin");
-            asem_post(&box.demandeVaccin);
+            adebug(99, "asem_post box->demandeVaccin");
+            asem_post(&(box->demandeVaccin));
         }
 
         asem_getvalue(&vaccinodrome->waitingRoom, &ret);

@@ -27,14 +27,13 @@ typedef struct vaccinodrome
     int medecins;
     int temps;
 
+    int currMedecins;
+    int statut; // Statut : 0 => ouvert ; 1 => fermé
+
     asem_t waitingRoom; // Places libres
     asem_t medecinDisponibles; // Medecins disponibles
 
-    int currMedecins;
-
-    int statut; // Statut : 0 => ouvert ; 1 => fermé
-
-    box_t boxes[];
+    box_t* boxes;
 } vaccinodrome_t;
 
 vaccinodrome_t* get_vaccinodrome(int* err);

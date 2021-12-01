@@ -45,6 +45,8 @@ int main (int argc, char *argv []) {
     vaccinodrome->medecins = m;
     vaccinodrome->sieges = n;
     vaccinodrome->temps = t;
+    vaccinodrome->currMedecins = 0;
+    vaccinodrome->statut = 0;
 
     if(asem_init(&vaccinodrome->waitingRoom, "WaitingRoom", 1, n) == -1)
     {

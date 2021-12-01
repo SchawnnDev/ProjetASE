@@ -2,6 +2,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 #include "shm.h"
 
 void raler(const char *msg)                 // Une fonction simple pour les erreurs
@@ -33,7 +34,7 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
         return NULL;
     }
 
-    ssize_t totalSize = sizeof(vaccinodrome_t) + medecins * sizeof(box_t);
+    ssize_t totalSize = sizeof(vaccinodrome_t) + medecins * sizeof(box_t[medecins]);
 
     adebug(99, "total size = %d", totalSize);
 
@@ -44,6 +45,8 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
     }
 
     vaccinodrome = mmap(NULL, totalSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+    //memset(vaccinodrome->boxes, sizeof(vaccinodrome_t), sizeof (vaccinodrome_t));
 
     if (vaccinodrome == MAP_FAILED)
     {

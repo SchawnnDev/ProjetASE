@@ -21,13 +21,13 @@ int main(int argc, char *argv[]) {
     int numMedecin = vaccinodrome->currMedecins++;
 
     // On initialise un nouveau box
-    box_t* box = &vaccinodrome->boxes[numMedecin -1]; //vaccinodrome->boxes[numMedecin - 1];
+    box_t* box = (void*) (&vaccinodrome->boxes[0] + 50 + sizeof(box_t) * (numMedecin - 1));//&(vaccinodrome->boxes[numMedecin -1]); //vaccinodrome->boxes[numMedecin - 1];
     box->status = 0;
 
    // memset(&box->demandeVaccin, 0, sizeof(asem_t));
 
-    CHK(asem_init(&box->demandeVaccin, "demandeVaccin", 1, 0));
-    CHK(asem_init(&box->termineVaccin, "termineVaccin", 1, 0));
+    CHK(asem_init(&(box->demandeVaccin), "demandeVaccin", 1, 0));
+    CHK(asem_init(&(box->termineVaccin), "termineVaccin", 1, 0));
 
     adebug(99, "init demandeVaccin nom=%s", box->demandeVaccin.nom);
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     CHK(asem_post(&vaccinodrome->medecinDisponibles));
 
     while (1) {
-        TCHK(asem_wait(&box->demandeVaccin));
+        TCHK(asem_wait(&(box->demandeVaccin)));
 
         adebug(99, "vaccindorome status = %d", vaccinodrome->statut);
 
@@ -55,8 +55,8 @@ int main(int argc, char *argv[]) {
 
         fprintf(stdout, "Vaccination du client %s par le medecin %d\n", box->patient, numMedecin);
 
-        asem_post(&box->termineVaccin);
-        //snprintf(box.patient, 10, "");
+        asem_post(&(box->termineVaccin));
+        //snprintf(box->patient, 10, "");
         box->status = 0; // Box a nouveau disponible
         asem_post(&vaccinodrome->medecinDisponibles);
     }
