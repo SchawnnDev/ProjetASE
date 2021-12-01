@@ -43,15 +43,15 @@ int main(int argc, char *argv[])
     asem_wait(&vaccinodrome->medecinDisponibles);
 
     // Un medecin est disponible !
-    box_t box;
+    box_t* box;
     int found = -1;
 
     for (int i = 0; i < vaccinodrome->currMedecins; ++i)
     {
-        box = vaccinodrome->boxes[i];
+        box = &vaccinodrome->boxes[i];
 
         // On verifie si le box est disponible
-        if (box.status == 0)
+        if (box->status == 0)
         {
             found = i;
             break;
@@ -66,13 +66,13 @@ int main(int argc, char *argv[])
     }
 
     // Maintenant qu'on a un medecin, on lui ordonne de nous vacciner
-    box.status = 1; // Le box n'est plus disponible
-    snprintf(box.patient, 10, "%s", nom);
-    //box.patient = nom;
-    asem_post(&box.demandeVaccin);
+    box->status = 1; // Le box n'est plus disponible
+    snprintf(box->patient, 10, "%s", nom);
+    //box->patient = nom;
+    asem_post(&box->demandeVaccin);
 
     // On attend que le medecin nous vaccine
-    asem_wait(&box.termineVaccin);
+    asem_wait(&box->termineVaccin);
 
     // Le client est vaccine !
 
