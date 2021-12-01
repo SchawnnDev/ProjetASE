@@ -45,16 +45,16 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
     }
 
     vaccinodrome = mmap(NULL, totalSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-    memset(vaccinodrome, 0, totalSize);
-
-    vaccinodrome->boxes = (box_t*) (vaccinodrome + sizeof(vaccinodrome_t));
-
+    
     if (vaccinodrome == MAP_FAILED)
     {
         PERR("Impossible de mmap", debug);
         return NULL;
     }
+
+    memset(vaccinodrome, 0, totalSize);
+
+    vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
 
     if (close(fd) == -1)
     {
@@ -108,6 +108,8 @@ vaccinodrome_t *get_vaccinodrome(int *err)
         PERR("Impossible de mmap", debug);
         return NULL;
     }
+    
+    vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
 
     if (close(fd) == -1)
     {
