@@ -46,11 +46,13 @@ int main(int argc, char *argv[])
     box_t* box;
     int found = -1;
 
+    CHK(asem_wait(&vaccinodrome->asemMutex));
     for (int i = 0; i < vaccinodrome->currMedecins; ++i)
     {
         box = &vaccinodrome->boxes[i];
 
         // On verifie si le box est disponible
+
         if (box->status == 0)
         {
             found = i;
@@ -61,14 +63,16 @@ int main(int argc, char *argv[])
 
     if (found == -1)
     {
+        CHK(asem_post(&vaccinodrome->asemMutex));
         adebug(2, "Aucun medecin n'a ete trouve, alors qu'il y'avait une place libre.");
         raler("Impossible.\n");
     }
 
     // Maintenant qu'on a un medecin, on lui ordonne de nous vacciner
     box->status = 1; // Le box n'est plus disponible
+    CHK(asem_post(&vaccinodrome->asemMutex));
+
     snprintf(box->patient, 10, "%s", nom);
-    //box->patient = nom;
     asem_post(&box->demandeVaccin);
 
     // On attend que le medecin nous vaccine

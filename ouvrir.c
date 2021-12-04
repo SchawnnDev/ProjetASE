@@ -56,6 +56,18 @@ int main (int argc, char *argv []) {
         raler("asem_init\n");
     }
 
+    if(asem_init(&vaccinodrome->asemMutex, "asemMutex", 1, 1) == -1)
+    {
+        raler("asem_init\n");
+    }
+
+    // on initalise le tableau des box
+
+    for (int i = 0; i < vaccinodrome->medecins; ++i) {
+        box_t* box = &vaccinodrome->boxes[i];
+        memset(box, 0, sizeof (box_t));
+    }
+
     adebug(1, "Ouverture reussie!");
 
     return 0;

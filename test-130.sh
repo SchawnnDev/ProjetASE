@@ -26,12 +26,12 @@ PID_P=$!
 
 msleep $MARGE
 
-ps_existe $PID_P "patient devrait toujours être là -"
+ps_existe $PID_P "patient devrait toujours être là 1"
 
 msleep $TVAX
 
-ps_termine $PID_P "patient ne devrait plus être là 1"
-ps_existe $PID_M "médecin devrait toujours être là"
+ps_termine $PID_P "patient ne devrait plus être là"
+ps_existe $PID_M "médecin devrait toujours être là 2"
 
 # Fermer le vaccinodrome. Pas vu grand-monde aujourd'hui...
 ./fermer > $TMP.f 2>&1 &

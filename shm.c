@@ -52,9 +52,7 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
         return NULL;
     }
 
-   // memset(vaccinodrome, 0, sizeof(vaccinodrome_t));
-
-    vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
+   // vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
 
     if (close(fd) == -1)
     {
@@ -109,7 +107,7 @@ vaccinodrome_t *get_vaccinodrome(int *err)
         return NULL;
     }
 
-    vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
+//    vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
 
     if (close(fd) == -1)
     {
