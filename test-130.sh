@@ -3,7 +3,6 @@
 #
 # Test d'une session basique : un médecin et un patient
 #
-
 . ./ftest.sh
 
 ATT=1                   # nb de sièges dans la salle d'attente

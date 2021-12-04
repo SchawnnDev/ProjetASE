@@ -51,7 +51,7 @@ logs_aux ()
             echo "==> Fichier de log auxiliaire $f"
             cat $f
         done
-        rm -f $TMP $TMP.*
+        #rm -f $TMP $TMP.*
         if islinux
         then
             echo "============================================================"

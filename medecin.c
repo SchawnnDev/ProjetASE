@@ -25,8 +25,14 @@ int main(int argc, char *argv[]) {
     if(vaccinodrome->currMedecins + 1 > vaccinodrome->medecins)
     {
         fprintf(stderr, "Capacitee de medecins depassee.\n");
-        return 0;
+        return -1;
     }
+
+    // On souhaite que la création soit en section critique,
+    // car à l'incrémentation de currMedecin++
+    // un potentiel patient pourrait réserver le box
+    // alors que le box n'est même pas encore initialisé.
+    CHK(asem_wait(&vaccinodrome->asemMutex));
 
     // On veut un nouveau numero de medecin (de 0 à m-1)
     int numMedecin = vaccinodrome->currMedecins++;
@@ -35,11 +41,8 @@ int main(int argc, char *argv[]) {
 
     // On initialise un nouveau box
     box_t* box = &vaccinodrome->boxes[numMedecin];
-//    memset(box, 0, sizeof (box_t));
-
-    CHK(asem_wait(&vaccinodrome->asemMutex));
     box->status = 0;
-    CHK(asem_post(&vaccinodrome->asemMutex));
+    box->medecin = numMedecin;
 
     CHK(asem_init(&box->demandeVaccin, "demVacc", 1, 0));
     CHK(asem_init(&box->termineVaccin, "terVacc", 1, 0));
@@ -48,6 +51,8 @@ int main(int argc, char *argv[]) {
 
     int asemVal;
     CHK(asem_post(&vaccinodrome->medecinDisponibles));
+
+    CHK(asem_post(&vaccinodrome->asemMutex));
 
     while (1) {
         TCHK(asem_wait(&box->demandeVaccin));
@@ -68,7 +73,7 @@ int main(int argc, char *argv[]) {
             // Si il y'a encore un client on s'en occupe.
         }
 
-        fprintf(stdout, "Vaccination du client (%s) par le medecin (%d)\n", box->patient, numMedecin);
+        fprintf(stdout, "medecin %d vaccine %s\n", numMedecin, box->patient);
 
         adebug(0, "Usleep : %d ms", vaccinodrome->temps);
 

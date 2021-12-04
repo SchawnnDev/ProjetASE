@@ -34,10 +34,31 @@ int main(int argc, char *argv[])
     if(ret < 0 || vaccinodrome == NULL)
         return -1;
 
+    // vaccinodrome fermé
+    if(vaccinodrome->statut == 1)
+    {
+        adebug(99, "Vaccinodrome ferme. Client ne peut pas rentrer.");
+        return 1;
+    }
+
+    fprintf(stdout, "Le patient %s attend une place dans la salle d'attente.\n", nom);
+
     // On attend qu'une place se libere dans la salle d'attente
     asem_wait(&vaccinodrome->waitingRoom);
 
+    // vaccinodrome fermé
+    if(vaccinodrome->statut == 1)
+    {
+        adebug(99, "Vaccinodrome ferme. Client ne peut pas rentrer.");
+        return 1;
+    }
+
     // Une place s'est liberee, on entre dans la salle d'attente
+
+    // on récupère le siege du patient dans la salle d'attente.
+    asem_getvalue(&vaccinodrome->waitingRoom, &ret);
+
+    fprintf(stdout, "patient %s siege %d\n", nom, ret);
 
     // On attend un medecin disponible
     asem_wait(&vaccinodrome->medecinDisponibles);
@@ -47,7 +68,9 @@ int main(int argc, char *argv[])
     int found = -1;
 
     CHK(asem_wait(&vaccinodrome->asemMutex));
-    for (int i = 0; i < vaccinodrome->currMedecins; ++i)
+    const int medecins = vaccinodrome->currMedecins;
+
+    for (int i = 0; i < medecins; ++i)
     {
         box = &vaccinodrome->boxes[i];
 
@@ -65,12 +88,17 @@ int main(int argc, char *argv[])
     {
         CHK(asem_post(&vaccinodrome->asemMutex));
         adebug(2, "Aucun medecin n'a ete trouve, alors qu'il y'avait une place libre.");
-        raler("Impossible.\n");
+        raler("Impossible.");
     }
 
     // Maintenant qu'on a un medecin, on lui ordonne de nous vacciner
     box->status = 1; // Le box n'est plus disponible
     CHK(asem_post(&vaccinodrome->asemMutex));
+
+    // Une place est disponible dans la salle d'attente
+    asem_post(&vaccinodrome->waitingRoom);
+
+   // fprintf(stdout, "medecin %d patient %s\n", box->medecin, nom);
 
     snprintf(box->patient, 10, "%s", nom);
     asem_post(&box->demandeVaccin);
@@ -80,11 +108,8 @@ int main(int argc, char *argv[])
 
     // Le client est vaccine !
 
-    fprintf(stdout, "Patient %s vaccine par le medecin %d.\n", nom, found);
+    fprintf(stdout, "patient %s medecin %d\n", nom, box->medecin);
     adebug(1, "Client vaccine!");
-
-    // Une place est disponible dans la salle d'attente
-    asem_post(&vaccinodrome->waitingRoom);
 
     return 0;
 }

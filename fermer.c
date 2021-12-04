@@ -29,7 +29,9 @@ int main (int argc, char *argv []) {
         {
             box_t* box = &vaccinodrome->boxes[i];
             adebug(99, "vaccinodrome->boxes[%d], status=%d, name=%s", i, box->status, box->demandeVaccin.nom);
+            CHK(asem_wait(&vaccinodrome->asemMutex));
             if(box->status != 0) continue;
+            CHK(asem_post(&vaccinodrome->asemMutex));
             asem_getvalue(&box->demandeVaccin, &ret);
             adebug(99, "asem_getvalue(&box->demandeVaccin, &ret) => %d", ret);
             if(ret > 1) continue;
@@ -43,7 +45,7 @@ int main (int argc, char *argv []) {
 
     destroy_vaccinodrome(vaccinodrome);
 
-    adebug(1, "Fermeture reussie!");
+    adebug(99, "Fermeture reussie!");
 
     return 0;
 }

@@ -18,6 +18,7 @@ typedef struct box
     asem_t demandeVaccin; // Le patient demande un vaccin
     asem_t termineVaccin; // Le medecin a vaccine le patient
     int status;
+    int medecin;
     char patient[10];
 } box_t;
 
