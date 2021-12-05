@@ -24,7 +24,6 @@ int main (int argc, char *argv []) {
 
     // TODO: Attendre que tous les clients soient sortis.
     do {
-
         for (int i = 0; i < vaccinodrome->currMedecins; ++i)
         {
             box_t* box = &vaccinodrome->boxes[i];

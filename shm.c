@@ -10,7 +10,7 @@ void raler(const char *msg)                 // Une fonction simple pour les erre
     perror(msg);
 }
 
-vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
+vaccinodrome_t *create_vaccinodrome(int *err, int sieges, int medecins)
 {
     int fd;
     vaccinodrome_t *vaccinodrome;
@@ -34,7 +34,7 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
         return NULL;
     }
 
-    ssize_t totalSize = sizeof(vaccinodrome_t) + medecins * sizeof(box_t);
+    ssize_t totalSize = sizeof(vaccinodrome_t) + sieges * sizeof(siege_t) + medecins * sizeof(box_t);
 
     adebug(99, "total size = %d", totalSize);
 
@@ -53,6 +53,7 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
     }
 
    // vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
+   vaccinodrome->salleAttente = (void*) vaccinodrome + sizeof(box_t) * medecins + sizeof(vaccinodrome_t) + 1;
 
     if (close(fd) == -1)
     {
@@ -107,7 +108,7 @@ vaccinodrome_t *get_vaccinodrome(int *err)
         return NULL;
     }
 
-//    vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
+    vaccinodrome->salleAttente = (void*) vaccinodrome + sizeof(box_t) * vaccinodrome->medecins + sizeof(vaccinodrome_t) + 1;
 
     if (close(fd) == -1)
     {

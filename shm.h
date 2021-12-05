@@ -22,6 +22,12 @@ typedef struct box
     char patient[10];
 } box_t;
 
+typedef struct siege
+{
+    int id;
+    int statut;
+} siege_t;
+
 typedef struct vaccinodrome
 {
     int sieges;
@@ -31,17 +37,19 @@ typedef struct vaccinodrome
     asem_t waitingRoom; // Places libres
     asem_t medecinDisponibles; // Medecins disponibles
     asem_t asemMutex;
+    asem_t waitingRoomMutex;
 
     int currMedecins;
 
     int statut; // Statut : 0 => ouvert ; 1 => fermé
 
+    siege_t* salleAttente;
     box_t boxes[];
 } vaccinodrome_t;
 
 vaccinodrome_t* get_vaccinodrome(int* err);
 
-vaccinodrome_t* create_vaccinodrome(int* err, int medecins);
+vaccinodrome_t* create_vaccinodrome(int* err, int sieges, int medecins);
 
 void destroy_vaccinodrome(vaccinodrome_t *vaccinodrome);
 

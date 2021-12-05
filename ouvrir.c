@@ -4,11 +4,12 @@
 #include "shm.h"
 
 // Fichier ouvrir.c à rédiger
-int main (int argc, char *argv []) {
+int main(int argc, char *argv[])
+{
 
     ainit(argv[0]);
 
-    if(argc != 4)
+    if (argc != 4)
     {
         fprintf(stderr, "usage: %s : %d args\n", argv[0], argc - 1);
         return 1;
@@ -16,28 +17,28 @@ int main (int argc, char *argv []) {
 
     int n, m, t, ret;
 
-    if((n = atoi(argv[1])) <= 0)
+    if ((n = atoi(argv[1])) <= 0)
     {
         fprintf(stderr, "usage: %s : n=%d\n", argv[0], n);
         return 1;
     }
 
-    if((m = atoi(argv[2])) <= 0)
+    if ((m = atoi(argv[2])) <= 0)
     {
         fprintf(stderr, "usage: %s : m=%d\n", argv[0], m);
         return 1;
     }
 
-    if((t = atoi(argv[3])) < 0)
+    if ((t = atoi(argv[3])) < 0)
     {
         fprintf(stderr, "usage: %s : t=%d\n", argv[0], t);
         return 1;
     }
 
     ret = 1; // On souhaite utiliser raler() et non debug()
-    vaccinodrome_t* vaccinodrome = create_vaccinodrome(&ret, m);
+    vaccinodrome_t *vaccinodrome = create_vaccinodrome(&ret, n, m);
 
-    if(ret < 0 || vaccinodrome == NULL)
+    if (ret < 0 || vaccinodrome == NULL)
     {
         return -1;
     }
@@ -46,26 +47,42 @@ int main (int argc, char *argv []) {
     vaccinodrome->sieges = n;
     vaccinodrome->temps = t;
 
-    if(asem_init(&vaccinodrome->waitingRoom, "WaitingRoom", 1, n) == -1)
+    if (asem_init(&vaccinodrome->waitingRoom, "WaitingRoom", 1, n) == -1)
     {
         raler("asem_init\n");
     }
 
-    if(asem_init(&vaccinodrome->medecinDisponibles, "medecinDisponibles", 1, 0) == -1)
+    if (asem_init(&vaccinodrome->medecinDisponibles, "medecinDisponibles", 1, 0) == -1)
     {
         raler("asem_init\n");
     }
 
-    if(asem_init(&vaccinodrome->asemMutex, "asemMutex", 1, 1) == -1)
+    if (asem_init(&vaccinodrome->asemMutex, "asemMutex", 1, 1) == -1)
     {
         raler("asem_init\n");
+    }
+
+    if (asem_init(&vaccinodrome->waitingRoomMutex, "wrMutex", 1, 1) == -1)
+    {
+        raler("asem_init\n");
+    }
+
+    // on initalise le tableau des sièges
+    memset(vaccinodrome->salleAttente, 0, sizeof(siege_t) * n);
+
+    for (int i = 0; i < vaccinodrome->sieges; ++i)
+    {
+        siege_t *siege = &vaccinodrome->salleAttente[i];
+        siege->statut = 0;
+        siege->id = i;
     }
 
     // on initalise le tableau des box
 
-    for (int i = 0; i < vaccinodrome->medecins; ++i) {
-        box_t* box = &vaccinodrome->boxes[i];
-        memset(box, 0, sizeof (box_t));
+    for (int i = 0; i < vaccinodrome->medecins; ++i)
+    {
+        box_t *box = &vaccinodrome->boxes[i];
+        memset(box, 0, sizeof(box_t));
     }
 
     adebug(1, "Ouverture reussie!");

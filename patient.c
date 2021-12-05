@@ -46,19 +46,43 @@ int main(int argc, char *argv[])
     // On attend qu'une place se libere dans la salle d'attente
     asem_wait(&vaccinodrome->waitingRoom);
 
+    // On cherche à présent un siege disponible.
+
+    CHK(asem_wait(&vaccinodrome->waitingRoomMutex));
+    siege_t* siege = NULL;
+
+    for (int i = 0; i < vaccinodrome->sieges; ++i)
+    {
+        siege_t* found = &vaccinodrome->salleAttente[i];
+        if(found->statut != 0) // statut == 0 alors disponible.
+            continue;
+        siege = found;
+        break;
+    }
+
+    if(siege == NULL)
+    {
+        CHK(asem_post(&vaccinodrome->waitingRoomMutex));
+        adebug(2, "Aucune place a ete trouvee sur les sieges, alors qu'il y'avait une place libre.");
+        raler("Impossible.");
+        return 1;
+    }
+
+    siege->statut = 1;
+
+    CHK(asem_post(&vaccinodrome->waitingRoomMutex));
+
     // vaccinodrome fermé
     if(vaccinodrome->statut == 1)
     {
-        adebug(99, "Vaccinodrome ferme. Client ne peut pas rentrer.");
+        asem_post(&vaccinodrome->waitingRoom);
+        adebug(99, "Vaccinodrome ferme. Patient ne peut pas rentrer.");
         return 1;
     }
 
     // Une place s'est liberee, on entre dans la salle d'attente
 
-    // on récupère le siege du patient dans la salle d'attente.
-    asem_getvalue(&vaccinodrome->waitingRoom, &ret);
-
-    fprintf(stdout, "patient %s siege %d\n", nom, ret);
+    fprintf(stdout, "patient %s siege %d\n", nom, siege->id);
 
     // On attend un medecin disponible
     asem_wait(&vaccinodrome->medecinDisponibles);
@@ -94,6 +118,10 @@ int main(int argc, char *argv[])
     // Maintenant qu'on a un medecin, on lui ordonne de nous vacciner
     box->status = 1; // Le box n'est plus disponible
     CHK(asem_post(&vaccinodrome->asemMutex));
+
+    CHK(asem_wait(&vaccinodrome->waitingRoomMutex));
+    siege->statut = 0; // le siege est a nouveau disponible.
+    CHK(asem_post(&vaccinodrome->waitingRoomMutex));
 
     // Une place est disponible dans la salle d'attente
     asem_post(&vaccinodrome->waitingRoom);
