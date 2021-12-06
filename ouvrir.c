@@ -66,6 +66,8 @@ int main (int argc, char *argv []) {
     for (int i = 0; i < vaccinodrome->medecins; ++i) {
         box_t* box = &vaccinodrome->boxes[i];
         memset(box, 0, sizeof (box_t));
+        box->siegeStatus = 0;
+        box->siege = i;
     }
 
     adebug(1, "Ouverture reussie!");

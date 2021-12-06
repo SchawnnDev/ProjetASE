@@ -15,6 +15,16 @@
 
 typedef struct box
 {
+
+    // Structure divisée en deux parties
+
+
+    // Les sièges
+    int siege;
+    int siegeStatus;
+
+
+    // Le box
     asem_t demandeVaccin; // Le patient demande un vaccin
     asem_t termineVaccin; // Le medecin a vaccine le patient
     int status;
