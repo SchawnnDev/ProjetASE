@@ -10,7 +10,7 @@ void raler(const char *msg)                 // Une fonction simple pour les erre
     perror(msg);
 }
 
-vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
+vaccinodrome_t *create_vaccinodrome(int *err, int medecins, int sieges)
 {
     int fd;
     vaccinodrome_t *vaccinodrome;
@@ -34,7 +34,7 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
         return NULL;
     }
 
-    ssize_t totalSize = sizeof(vaccinodrome_t) + medecins * sizeof(box_t);
+    ssize_t totalSize = sizeof(vaccinodrome_t) + medecins * sizeof(box_t) + sieges * sizeof(siege_t);
 
     adebug(99, "total size = %d", totalSize);
 
@@ -51,8 +51,6 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins)
         PERR("Impossible de mmap", debug);
         return NULL;
     }
-
-   // vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
 
     if (close(fd) == -1)
     {

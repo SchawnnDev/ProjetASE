@@ -35,7 +35,7 @@ int main (int argc, char *argv []) {
     }
 
     ret = 1; // On souhaite utiliser raler() et non debug()
-    vaccinodrome_t* vaccinodrome = create_vaccinodrome(&ret, m);
+    vaccinodrome_t* vaccinodrome = create_vaccinodrome(&ret, m, n);
 
     if(ret < 0 || vaccinodrome == NULL)
     {
@@ -61,13 +61,24 @@ int main (int argc, char *argv []) {
         raler("asem_init\n");
     }
 
+    if(asem_init(&vaccinodrome->siegeMutex, "siegeMutex", 1, 1) == -1)
+    {
+        raler("asem_init\n");
+    }
+
     // on initalise le tableau des box
+
+    for (int i = 0; i < vaccinodrome->sieges; ++i)
+    {
+        siege_t* siege = &vaccinodrome->salleAttente[i];
+        memset(siege, 0, sizeof (siege_t));
+        siege->status = 0;
+        siege->siege = i;
+    }
 
     for (int i = 0; i < vaccinodrome->medecins; ++i) {
         box_t* box = &vaccinodrome->boxes[i];
         memset(box, 0, sizeof (box_t));
-        box->siegeStatus = 0;
-        box->siege = i;
     }
 
     adebug(1, "Ouverture reussie!");

@@ -19,7 +19,6 @@ int main(int argc, char *argv[]) {
     {
         adebug(0, "test");
         return -1;
-
     }
 
     if(vaccinodrome->currMedecins + 1 > vaccinodrome->medecins)

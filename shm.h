@@ -13,18 +13,14 @@
 
 #include "asem.h"
 
+typedef struct siege
+{
+    int siege;
+    int status;
+} siege_t;
+
 typedef struct box
 {
-
-    // Structure divisée en deux parties
-
-
-    // Les sièges
-    int siege;
-    int siegeStatus;
-
-
-    // Le box
     asem_t demandeVaccin; // Le patient demande un vaccin
     asem_t termineVaccin; // Le medecin a vaccine le patient
     int status;
@@ -41,17 +37,19 @@ typedef struct vaccinodrome
     asem_t waitingRoom; // Places libres
     asem_t medecinDisponibles; // Medecins disponibles
     asem_t asemMutex;
+    asem_t siegeMutex;
 
     int currMedecins;
 
     int statut; // Statut : 0 => ouvert ; 1 => fermé
 
-    box_t boxes[];
+    siege_t salleAttente[1];
+    box_t boxes[1];
 } vaccinodrome_t;
 
 vaccinodrome_t* get_vaccinodrome(int* err);
 
-vaccinodrome_t* create_vaccinodrome(int* err, int medecins);
+vaccinodrome_t* create_vaccinodrome(int* err, int medecins, int sieges);
 
 void destroy_vaccinodrome(vaccinodrome_t *vaccinodrome);
 

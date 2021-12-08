@@ -26,6 +26,7 @@ int main (int argc, char *argv []) {
     asem_destroy(&vaccinodrome->waitingRoom);
     asem_destroy(&vaccinodrome->medecinDisponibles);
     asem_destroy(&vaccinodrome->asemMutex);
+    asem_destroy(&vaccinodrome->siegeMutex);
 
     for (int i = 0; i < vaccinodrome->currMedecins; ++i)
     {

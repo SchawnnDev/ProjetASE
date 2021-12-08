@@ -55,17 +55,47 @@ int main(int argc, char *argv[])
 
     // Une place s'est liberee, on entre dans la salle d'attente
 
+    siege_t* siege;
+    int found = -1;
     // on récupère le siege du patient dans la salle d'attente.
-    asem_getvalue(&vaccinodrome->waitingRoom, &ret);
 
-    fprintf(stdout, "patient %s siege %d\n", nom, ret);
+    CHK(asem_wait(&vaccinodrome->siegeMutex));
+
+    for (int i = 0; i < vaccinodrome->sieges; ++i)
+    {
+        siege = &vaccinodrome->salleAttente[i];
+
+        // On verifie si le siege est disponible
+
+        if (siege->status == 0)
+        {
+            found = i;
+            break;
+        }
+    }
+
+    if (found == -1)
+    {
+        CHK(asem_post(&vaccinodrome->siegeMutex));
+        adebug(2, "Aucun siege n'a ete trouve, alors qu'il y'avait une place libre.");
+        raler("Impossible.");
+    }
+
+    siege->status = 1; // Le siege n'est plus disponible
+    CHK(asem_post(&vaccinodrome->siegeMutex));
+
+    fprintf(stdout, "patient %s siege %d\n", nom, siege->siege);
 
     // On attend un medecin disponible
     asem_wait(&vaccinodrome->medecinDisponibles);
 
+    CHK(asem_wait(&vaccinodrome->siegeMutex));
+    siege->status = 0; // Le siege est a nouveau disponible
+    CHK(asem_post(&vaccinodrome->siegeMutex));
+
     // Un medecin est disponible !
     box_t* box;
-    int found = -1;
+    found = -1;
 
     CHK(asem_wait(&vaccinodrome->asemMutex));
     const int medecins = vaccinodrome->currMedecins;
