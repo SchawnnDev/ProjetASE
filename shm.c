@@ -33,10 +33,7 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins, int sieges)
         PERR("Impossible de shm_open", debug);
         return NULL;
     }
-
     ssize_t totalSize = sizeof(vaccinodrome_t) + medecins * sizeof(box_t) + sieges * sizeof(siege_t);
-
-    adebug(99, "total size = %d", totalSize);
 
     if (ftruncate(fd, totalSize) == -1)
     {
@@ -51,6 +48,8 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins, int sieges)
         PERR("Impossible de mmap", debug);
         return NULL;
     }
+
+    memset(vaccinodrome, 0, totalSize);
 
     if (close(fd) == -1)
     {
@@ -69,7 +68,6 @@ vaccinodrome_t *get_vaccinodrome(int *err)
     vaccinodrome_t *vaccinodrome;
     struct stat stat;
     const int debug = *err == 0; // Si err != 0, alors on utilise raler() sinon adebug()
-
     *err = -1;
     errno = 0;
     fd = shm_open(TEMP_FILE_NAME, O_RDWR, 0666);
@@ -85,7 +83,6 @@ vaccinodrome_t *get_vaccinodrome(int *err)
         PERR("Impossible de shm_open", debug);
         return NULL;
     }
-
 
     // On récupère la taille de la memoire partagee avec fstat
     // Car elle est dynamique.
@@ -105,7 +102,12 @@ vaccinodrome_t *get_vaccinodrome(int *err)
         return NULL;
     }
 
-//    vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
+/*    typedef struct bla_t
+    {
+        vaccinodrome_t *shared_vaccinodrome;
+        siege_t *siege_addr;
+        box_t *medecin_addr;
+    } bla;*/
 
     if (close(fd) == -1)
     {
@@ -119,9 +121,25 @@ vaccinodrome_t *get_vaccinodrome(int *err)
 
 void destroy_vaccinodrome(vaccinodrome_t *vaccinodrome)
 {
+    asem_destroy(&vaccinodrome->waitingRoom);
+    asem_destroy(&vaccinodrome->nouveauPatient);
+    asem_destroy(&vaccinodrome->asemMutex);
+    asem_destroy(&vaccinodrome->siegeMutex);
+    asem_destroy(&vaccinodrome->fermer);
+
+    for (int i = 0; i < vaccinodrome->currMedecins; ++i)
+    {
+        CHK(asem_destroy(&vaccinodrome->medecins[i].termineVaccin));
+        CHK(asem_destroy(&vaccinodrome->medecins[i].attentePatient));
+    }
+
+
+    for (int i = 0; i < vaccinodrome->nbSieges; ++i)
+        CHK(asem_destroy(&(get_siege_at(vaccinodrome, i)->attenteMedecin)));
 
     // mmap cleanup
-    if (munmap(vaccinodrome, sizeof(vaccinodrome_t)) == -1)
+    if (munmap(vaccinodrome, sizeof(vaccinodrome_t) + vaccinodrome->nbMedecins * sizeof(box_t) +
+                             vaccinodrome->nbSieges * sizeof(siege_t)) == -1)
     {
         adebug(2, "munmap");
     }
@@ -132,5 +150,29 @@ void destroy_vaccinodrome(vaccinodrome_t *vaccinodrome)
     {
         adebug(2, "unlink");
     }
+}
 
+siege_t* find_siege(vaccinodrome_t* vaccinodrome, int statut)
+{
+    siege_t* siege = NULL;
+
+    for (int i = 0; i < vaccinodrome->nbSieges; ++i)
+    {
+        siege = get_siege_at(vaccinodrome, i);
+
+        if (siege->statut == statut) break;
+        siege = NULL;
+    }
+
+    return siege;
+}
+
+siege_t* get_sieges(vaccinodrome_t* vaccinodrome)
+{
+    return (void*)(vaccinodrome->medecins + vaccinodrome->nbMedecins);
+}
+
+siege_t* get_siege_at(vaccinodrome_t *vaccinodrome, int i)
+{
+    return get_sieges(vaccinodrome) + i;
 }

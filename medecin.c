@@ -21,56 +21,64 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    if(vaccinodrome->currMedecins + 1 > vaccinodrome->medecins)
+    if(vaccinodrome->statut == 1)
+    {
+        fprintf(stderr, "Vaccinodrome ferme.\n");
+        return -1;
+    }
+
+    if(vaccinodrome->currMedecins + 1 > vaccinodrome->nbMedecins)
     {
         fprintf(stderr, "Capacitee de medecins depassee.\n");
         return -1;
     }
 
-    // On souhaite que la création soit en section critique,
-    // car à l'incrémentation de currMedecin++
-    // un potentiel patient pourrait réserver le box
-    // alors que le box n'est même pas encore initialisé.
-    CHK(asem_wait(&vaccinodrome->asemMutex));
-
     // On veut un nouveau numero de medecin (de 0 à m-1)
     int numMedecin = vaccinodrome->currMedecins++;
+
+    CHK(asem_wait(&vaccinodrome->asemMutex));
+    vaccinodrome->medecinsRestants++;
+    CHK(asem_post(&vaccinodrome->asemMutex));
 
     adebug(0, "nouveau medecin id=%d", numMedecin);
 
     // On initialise un nouveau box
-    box_t* box = &vaccinodrome->boxes[numMedecin];
-    box->status = 0;
+    box_t* box = &vaccinodrome->medecins[numMedecin];
     box->medecin = numMedecin;
 
-    CHK(asem_init(&box->demandeVaccin, "demVacc", 1, 0));
-    CHK(asem_init(&box->termineVaccin, "terVacc", 1, 0));
+    CHK(asem_init(&box->attentePatient, "attentePatient", 1, 0));
+    CHK(asem_init(&box->termineVaccin, "termineVaccin", 1, 0));
 
-    adebug(0, "init demandeVaccin nom=%s", box->demandeVaccin.nom);
-
-    int asemVal;
-    CHK(asem_post(&vaccinodrome->medecinDisponibles));
-
-    CHK(asem_post(&vaccinodrome->asemMutex));
+    siege_t* siege;
 
     while (1) {
-        TCHK(asem_wait(&box->demandeVaccin));
+        TCHK(asem_wait(&vaccinodrome->nouveauPatient));
 
         adebug(0, "vaccindorome status = %d", vaccinodrome->statut);
 
-        // On verifie si le vaccinodrome est ferme
-        if (vaccinodrome->statut == 1) {
-            // On recupere la place disponible dans le vaccinodrome
-            CHK(asem_getvalue(&vaccinodrome->waitingRoom, &asemVal));
-            adebug(0, "asemVal(%d) == vaccindrome->sieges(%d)", asemVal, vaccinodrome->sieges);
-            if (asemVal == vaccinodrome->sieges) {
-                adebug(0, "Le medecin %d est parti.", numMedecin);
-                // Le medecin peut partir, il n'y a plus aucun patient
-                break;
-            }
+        CHK(asem_wait(&vaccinodrome->siegeMutex));
+        siege = find_siege(vaccinodrome, 1);
+        CHK(asem_post(&vaccinodrome->siegeMutex));
 
-            // Si il y'a encore un client on s'en occupe.
+        adebug(99, "Siege found ?");
+
+        // On verifie si le vaccinodrome est ferme
+        if (siege == NULL && vaccinodrome->statut == 1) {
+            adebug(99, "Le medecin %d est parti.", numMedecin);
+            // Le medecin peut partir, il n'y a plus aucun patient
+            break;
         }
+
+        if(siege == NULL) {
+            adebug(99, "Erreur iconnue");
+            continue;
+        }
+
+        snprintf(box->patient, 10, "%s", siege->patient);
+
+        CHK(asem_post(&siege->attenteMedecin));
+
+        CHK(asem_wait(&box->attentePatient));
 
         fprintf(stdout, "medecin %d vaccine %s\n", numMedecin, box->patient);
 
@@ -78,16 +86,14 @@ int main(int argc, char *argv[]) {
 
         CHK(usleep(vaccinodrome->temps * 1000));
 
-        asem_post(&box->termineVaccin);
-        //snprintf(box->patient, 10, "");
-
-        CHK(asem_wait(&vaccinodrome->asemMutex));
-        box->status = 0; // Box a nouveau disponible
-        CHK(asem_post(&vaccinodrome->asemMutex));
-
-        asem_post(&vaccinodrome->medecinDisponibles);
+        CHK(asem_post(&box->termineVaccin));
     }
 
+    CHK(asem_wait(&vaccinodrome->asemMutex));
+    vaccinodrome->medecinsRestants--;
+    CHK(asem_post(&vaccinodrome->asemMutex));
+
+    CHK(asem_post(&vaccinodrome->fermer));
 
     return 0;
 }

@@ -23,18 +23,6 @@ int main (int argc, char *argv []) {
         return 0;
     }
 
-    asem_destroy(&vaccinodrome->waitingRoom);
-    asem_destroy(&vaccinodrome->medecinDisponibles);
-    asem_destroy(&vaccinodrome->asemMutex);
-    asem_destroy(&vaccinodrome->siegeMutex);
-
-    for (int i = 0; i < vaccinodrome->currMedecins; ++i)
-    {
-        box_t box = vaccinodrome->boxes[i];
-        asem_destroy(&box.termineVaccin);
-        asem_destroy(&box.demandeVaccin);
-    }
-
     destroy_vaccinodrome(vaccinodrome);
 
     adebug(2, "Nettoyage reussi!");

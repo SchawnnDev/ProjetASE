@@ -42,8 +42,8 @@ int main (int argc, char *argv []) {
         return -1;
     }
 
-    vaccinodrome->medecins = m;
-    vaccinodrome->sieges = n;
+    vaccinodrome->nbMedecins = m;
+    vaccinodrome->nbSieges = n;
     vaccinodrome->temps = t;
 
     if(asem_init(&vaccinodrome->waitingRoom, "WaitingRoom", 1, n) == -1)
@@ -51,7 +51,7 @@ int main (int argc, char *argv []) {
         raler("asem_init\n");
     }
 
-    if(asem_init(&vaccinodrome->medecinDisponibles, "medecinDisponibles", 1, 0) == -1)
+    if(asem_init(&vaccinodrome->nouveauPatient, "medecinDisponibles", 1, 0) == -1)
     {
         raler("asem_init\n");
     }
@@ -66,19 +66,24 @@ int main (int argc, char *argv []) {
         raler("asem_init\n");
     }
 
-    // on initalise le tableau des box
-
-    for (int i = 0; i < vaccinodrome->sieges; ++i)
+    if(asem_init(&vaccinodrome->fermer, "fermer", 1, 1) == -1)
     {
-        siege_t* siege = &vaccinodrome->salleAttente[i];
-        memset(siege, 0, sizeof (siege_t));
-        siege->status = 0;
-        siege->siege = i;
+        raler("asem_init\n");
     }
 
-    for (int i = 0; i < vaccinodrome->medecins; ++i) {
-        box_t* box = &vaccinodrome->boxes[i];
-        memset(box, 0, sizeof (box_t));
+    for (int i = 0; i < vaccinodrome->nbMedecins; ++i)
+    {
+        box_t* box = &vaccinodrome->medecins[i];
+        memset(box, 0, sizeof(box_t));
+    }
+
+    for (int i = 0; i < vaccinodrome->nbSieges; ++i)
+    {
+        siege_t* siege = get_siege_at(vaccinodrome, i);
+        memset(siege, 0, sizeof(siege_t));
+        siege->statut = 0;
+        siege->siege = i;
+        asem_init(&(siege->attenteMedecin), "attenteMed", 1, 0);
     }
 
     adebug(1, "Ouverture reussie!");
