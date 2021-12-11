@@ -134,3 +134,46 @@ void destroy_vaccinodrome(vaccinodrome_t *vaccinodrome)
     }
 
 }
+
+siege_t *find_siege(vaccinodrome_t *vaccinodrome, int statut)
+{
+    siege_t *siege = NULL;
+
+    for (int i = 0; i < vaccinodrome->nbSieges; ++i)
+    {
+        siege = get_siege_at(vaccinodrome, i);
+
+        adebug(99, "find_siege statut=%d i=%d siege->statut=%d, siege->siege=%d", statut, i, siege->statut,
+               siege->siege);
+
+        if (siege->statut == statut) break;
+        siege = NULL;
+    }
+
+    return siege;
+}
+
+siege_t *get_sieges(vaccinodrome_t *vaccinodrome)
+{
+    return (void *) (vaccinodrome->medecins + vaccinodrome->nbMedecins);
+}
+
+siege_t *get_siege_at(vaccinodrome_t *vaccinodrome, int i)
+{
+    return get_sieges(vaccinodrome) + i;
+}
+
+
+int count_sieges_occupes(vaccinodrome_t *vaccinodrome)
+{
+    int result = 0;
+
+    for (int i = 0; i < vaccinodrome->nbSieges; ++i)
+    {
+        if (get_siege_at(vaccinodrome, i)->statut != 1)
+            continue;
+        result++;
+    }
+
+    return result;
+}

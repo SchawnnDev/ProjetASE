@@ -27,12 +27,15 @@ int main (int argc, char *argv []) {
     asem_destroy(&vaccinodrome->medecinDisponibles);
     asem_destroy(&vaccinodrome->asemMutex);
     asem_destroy(&vaccinodrome->siegeMutex);
+    asem_destroy(&vaccinodrome->waitingMutex);
+    asem_destroy(&vaccinodrome->fermer);
 
     for (int i = 0; i < vaccinodrome->currMedecins; ++i)
     {
-        box_t box = vaccinodrome->boxes[i];
-        asem_destroy(&box.termineVaccin);
-        asem_destroy(&box.demandeVaccin);
+        box_t* box = &vaccinodrome->medecins[i];
+        asem_destroy(&box->termineVaccin);
+        asem_destroy(&box->demandeVaccin);
+        asem_destroy(&box->boxMutex);
     }
 
     destroy_vaccinodrome(vaccinodrome);

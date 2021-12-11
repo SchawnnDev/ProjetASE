@@ -18,30 +18,51 @@ int main (int argc, char *argv []) {
     if(ret < 0 || vaccinodrome == NULL)
         return -1;
 
+
+    /**
+     * DEBUG:
+     */
+
+    int test;
+    asem_getvalue(&vaccinodrome->waitingRoom, &test);
+
+    adebug(99, "DEBUG WAITINGROOM=%d", test);
+
+    /**
+     *
+     */
+
     vaccinodrome->statut = 1;
 
     adebug(99, "vaccinodrome->status = 1");
 
-    // TODO: Attendre que tous les clients soient sortis.
-    do {
+    CHK(asem_wait(&vaccinodrome->siegeMutex));
+    int siegesOccupes = count_sieges_occupes(vaccinodrome);
+    CHK(asem_post(&vaccinodrome->siegeMutex));
+
+    // S'il n'y a plus aucun patient on veut débloquer les médecins
+    if(siegesOccupes == 0)
+    {
+        adebug(99, "ASEM_WAIT FERMER");
+        //CHK(asem_wait(&vaccinodrome->fermer)); // wait initialisée a 1 dans tous les cas il y'aura au moins un passage
 
         for (int i = 0; i < vaccinodrome->currMedecins; ++i)
         {
-            box_t* box = &vaccinodrome->boxes[i];
-            adebug(99, "vaccinodrome->boxes[%d], status=%d, name=%s", i, box->status, box->demandeVaccin.nom);
-            CHK(asem_wait(&vaccinodrome->asemMutex));
-            if(box->status != 0) continue;
-            CHK(asem_post(&vaccinodrome->asemMutex));
-            asem_getvalue(&box->demandeVaccin, &ret);
-            adebug(99, "asem_getvalue(&box->demandeVaccin, &ret) => %d", ret);
-            if(ret > 1) continue;
-            adebug(99, "asem_post box->demandeVaccin");
-            asem_post(&box->demandeVaccin);
-        }
+            box_t* box = &vaccinodrome->medecins[i];
 
-        asem_getvalue(&vaccinodrome->waitingRoom, &ret);
-        adebug(99, "asem_getvalue(&vaccinodrome->waitingRoom, &ret) => %d", ret);
-    } while (ret != vaccinodrome->sieges);
+            if(box->status != 0) // Le medecin est soit pas dispo soit terminé
+                continue;
+
+            CHK(asem_post(&box->demandeVaccin));
+        }
+    } else {
+        for (int i = 0; i < vaccinodrome->currPatientWaiting; ++i)
+            asem_post(&vaccinodrome->waitingRoom);
+    }
+
+    // On attend que tous les médecins se ferment
+    for (int i = 0; i < vaccinodrome->currMedecins; ++i)
+        CHK(asem_wait(&vaccinodrome->fermer));
 
     destroy_vaccinodrome(vaccinodrome);
 
