@@ -35,7 +35,6 @@ int main (int argc, char *argv []) {
         box_t* box = &vaccinodrome->medecins[i];
         asem_destroy(&box->termineVaccin);
         asem_destroy(&box->demandeVaccin);
-        asem_destroy(&box->boxMutex);
     }
 
     destroy_vaccinodrome(vaccinodrome);

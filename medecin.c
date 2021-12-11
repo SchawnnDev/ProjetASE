@@ -61,7 +61,6 @@ int main(int argc, char *argv[])
 
     CHK(asem_init(&box->demandeVaccin, "demVacc", 1, 0));
     CHK(asem_init(&box->termineVaccin, "terVacc", 1, 0));
-    CHK(asem_init(&box->termineVaccin, "boxMutex", 1, 1));
 
     adebug(0, "init demandeVaccin nom=%s", box->demandeVaccin.nom);
 
@@ -73,9 +72,9 @@ int main(int argc, char *argv[])
     {
         TCHK(asem_wait(&box->demandeVaccin));
 
-        if (box->status != 1 && check_fermeture(vaccinodrome) == 1) // Si aucun siege n'est occupé. on arrête
+        if (strncmp(box->patient, "", MAX_NOM_PATIENT) == 0 && check_fermeture(vaccinodrome) == 1) // Si aucun siege n'est occupé. on arrête
         {
-            adebug(0, "Le medecin %d est parti. 1", numMedecin);
+            adebug(99, "Le medecin %d est parti. 1", numMedecin);
             // Le medecin peut partir, il n'y a plus aucun patient
             break;
         }
@@ -90,11 +89,12 @@ int main(int argc, char *argv[])
 
         CHK(asem_wait(&vaccinodrome->asemMutex));
         box->status = 0; // Box a nouveau disponible
+        memset(&box->patient, 0, MAX_NOM_PATIENT);
         CHK(asem_post(&vaccinodrome->asemMutex));
 
         if (check_fermeture(vaccinodrome) == 1) // Si aucun siege n'est occupé. on arrête
         {
-            adebug(0, "Le medecin %d est parti. 2", numMedecin);
+            adebug(99, "Le medecin %d est parti. 2", numMedecin);
             // Le medecin peut partir, il n'y a plus aucun patient
             break;
         }

@@ -10,7 +10,7 @@
 #define NCHK(op)        do { if ((op) == NULL) { raler (#op); } } while (0)
 #define TCHK(op)        do { if ((errno=(op)) > 0) { raler (#op); } } while (0)
 #define PERR(str, debug) do { if(debug == 1) adebug(2, str); else raler(str); } while(0)
-
+#define MAX_NOM_PATIENT 11
 #include "asem.h"
 
 typedef struct siege
@@ -26,7 +26,7 @@ typedef struct box
     asem_t boxMutex;
     int status;
     int medecin;
-    char patient[10];
+    char patient[MAX_NOM_PATIENT];
 } box_t;
 
 typedef struct vaccinodrome

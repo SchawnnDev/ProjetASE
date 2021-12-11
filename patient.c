@@ -2,7 +2,6 @@
 #include <string.h>
 #include "shm.h"
 
-
 siege_t* chercher_siege(vaccinodrome_t* vaccinodrome) {
     siege_t* siege = NULL;
     // on récupère le siege du patient dans la salle d'attente.
@@ -135,7 +134,7 @@ int main(int argc, char *argv[])
 
    // fprintf(stdout, "medecin %d patient %s\n", box->medecin, nom);
 
-    snprintf(box->patient, 10, "%s", nom);
+    snprintf(box->patient, MAX_NOM_PATIENT, "%s", nom);
     asem_post(&box->demandeVaccin);
 
     // On attend que le medecin nous vaccine
