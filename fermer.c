@@ -17,19 +17,6 @@ int main(int argc, char *argv[])
     if (ret < 0 || vaccinodrome == NULL)
         return -1;
 
-    /**
-     * DEBUG:
-     */
-
-    int test;
-    asem_getvalue(&vaccinodrome->waitingRoom, &test);
-
-    adebug(99, "DEBUG WAITINGROOM=%d", test);
-
-    /**
-     *
-     */
-
     vaccinodrome->statut = 1;
 
     adebug(99, "vaccinodrome->status = 1");
@@ -51,6 +38,11 @@ int main(int argc, char *argv[])
             if (box->status != 0) // Le medecin est soit pas dispo soit terminé
                 continue;
 
+            CHK(asem_wait(&vaccinodrome->asemMutex));
+            box->status = 2;
+            CHK(asem_post(&vaccinodrome->asemMutex));
+
+            // on debloque le medecin pour qu'il s'arrete
             CHK(asem_post(&box->demandeVaccin));
         }
     } else

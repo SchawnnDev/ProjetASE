@@ -105,8 +105,6 @@ vaccinodrome_t *get_vaccinodrome(int *err)
         return NULL;
     }
 
-//    vaccinodrome->boxes = (box_t*)(vaccinodrome + 1);
-
     if (close(fd) == -1)
     {
         PERR("close fd", debug);
@@ -119,19 +117,29 @@ vaccinodrome_t *get_vaccinodrome(int *err)
 
 void destroy_vaccinodrome(vaccinodrome_t *vaccinodrome)
 {
+    // on détruit toutes les sémaphores
+    asem_destroy(&vaccinodrome->waitingRoom);
+    asem_destroy(&vaccinodrome->medecinDisponibles);
+    asem_destroy(&vaccinodrome->asemMutex);
+    asem_destroy(&vaccinodrome->siegeMutex);
+    asem_destroy(&vaccinodrome->waitingMutex);
+    asem_destroy(&vaccinodrome->fermer);
+
+    for (int i = 0; i < vaccinodrome->currMedecins; ++i)
+    {
+        box_t* box = &vaccinodrome->medecins[i];
+        asem_destroy(&box->termineVaccin);
+        asem_destroy(&box->demandeVaccin);
+    }
 
     // mmap cleanup
     if (munmap(vaccinodrome, sizeof(vaccinodrome_t)) == -1)
-    {
         adebug(2, "munmap");
-    }
 
     // shm_open cleanup
     int fd = shm_unlink(TEMP_FILE_NAME);
     if (fd == -1)
-    {
         adebug(2, "unlink");
-    }
 
 }
 
@@ -142,10 +150,6 @@ siege_t *find_siege(vaccinodrome_t *vaccinodrome, int statut)
     for (int i = 0; i < vaccinodrome->nbSieges; ++i)
     {
         siege = get_siege_at(vaccinodrome, i);
-
-        adebug(99, "find_siege statut=%d i=%d siege->statut=%d, siege->siege=%d", statut, i, siege->statut,
-               siege->siege);
-
         if (siege->statut == statut) break;
         siege = NULL;
     }
@@ -162,7 +166,6 @@ siege_t *get_siege_at(vaccinodrome_t *vaccinodrome, int i)
 {
     return get_sieges(vaccinodrome) + i;
 }
-
 
 int count_sieges_occupes(vaccinodrome_t *vaccinodrome)
 {

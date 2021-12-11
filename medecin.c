@@ -3,6 +3,11 @@
 #include <unistd.h>
 #include "shm.h"
 
+/**
+ * Vérifier s'il est possible de fermer ce box ou pas
+ * @param vaccinodrome Un pointeur vers la structure vaccinodrome
+ * @return 1 si c'est possible, sinon 0
+ */
 int check_fermeture(vaccinodrome_t *vaccinodrome)
 {
     // On verifie si le vaccinodrome est ferme
@@ -63,18 +68,17 @@ int main(int argc, char *argv[])
     CHK(asem_init(&box->termineVaccin, "terVacc", 1, 0));
 
     adebug(0, "init demandeVaccin nom=%s", box->demandeVaccin.nom);
+    CHK(asem_post(&vaccinodrome->asemMutex));
 
     CHK(asem_post(&vaccinodrome->medecinDisponibles));
-
-    CHK(asem_post(&vaccinodrome->asemMutex));
 
     while (1)
     {
         TCHK(asem_wait(&box->demandeVaccin));
 
-        if (strncmp(box->patient, "", MAX_NOM_PATIENT) == 0 && check_fermeture(vaccinodrome) == 1) // Si aucun siege n'est occupé. on arrête
+        if (box->status == 2 && check_fermeture(vaccinodrome) == 1) // Si aucun siege n'est occupé. on arrête
         {
-            adebug(99, "Le medecin %d est parti. 1", numMedecin);
+            adebug(99, "Le medecin %d est parti.", numMedecin);
             // Le medecin peut partir, il n'y a plus aucun patient
             break;
         }
@@ -85,6 +89,7 @@ int main(int argc, char *argv[])
 
         CHK(usleep(vaccinodrome->temps * 1000));
 
+        // Vaccin terminé, on peut lacher le patient
         asem_post(&box->termineVaccin);
 
         CHK(asem_wait(&vaccinodrome->asemMutex));
@@ -94,7 +99,7 @@ int main(int argc, char *argv[])
 
         if (check_fermeture(vaccinodrome) == 1) // Si aucun siege n'est occupé. on arrête
         {
-            adebug(99, "Le medecin %d est parti. 2", numMedecin);
+            adebug(99, "Le medecin %d est parti.", numMedecin);
             // Le medecin peut partir, il n'y a plus aucun patient
             break;
         }

@@ -2,6 +2,11 @@
 #include <string.h>
 #include "shm.h"
 
+/**
+ * Cherche un siege et le rend occupé
+ * @param vaccinodrome Un pointeur vers la structure vaccinodrome
+ * @return Siège libre trouvé et passé a occupé
+ */
 siege_t* chercher_siege(vaccinodrome_t* vaccinodrome) {
     siege_t* siege = NULL;
     // on récupère le siege du patient dans la salle d'attente.
@@ -23,6 +28,11 @@ siege_t* chercher_siege(vaccinodrome_t* vaccinodrome) {
     return siege;
 }
 
+/**
+ * Cherche un box libre (status == 0)
+ * @param vaccinodrome Un pointeur vers la structure vaccinodrome
+ * @return Un box libre
+ */
 box_t* chercher_box(vaccinodrome_t* vaccinodrome)
 {
     box_t* box = NULL;
@@ -132,9 +142,9 @@ int main(int argc, char *argv[])
     // Une place est disponible dans la salle d'attente
     asem_post(&vaccinodrome->waitingRoom);
 
-   // fprintf(stdout, "medecin %d patient %s\n", box->medecin, nom);
-
     snprintf(box->patient, MAX_NOM_PATIENT, "%s", nom);
+
+    // On demande le vaccin au medecin
     asem_post(&box->demandeVaccin);
 
     // On attend que le medecin nous vaccine
