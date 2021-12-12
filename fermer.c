@@ -29,26 +29,29 @@ int main(int argc, char *argv[])
     if (siegesOccupes == 0)
     {
         adebug(99, "ASEM_WAIT FERMER");
-        // wait initialisée a 1 dans tous les cas il y'aura au moins un passage
+
 
         for (int i = 0; i < vaccinodrome->currMedecins; ++i)
         {
             box_t *box = &vaccinodrome->medecins[i];
 
+            CHK(asem_wait(&vaccinodrome->asemMutex));
+
             if (box->status != 0) // Le medecin est soit pas dispo soit terminé
                 continue;
 
-            CHK(asem_wait(&vaccinodrome->asemMutex));
             box->status = 2;
-            CHK(asem_post(&vaccinodrome->asemMutex));
 
+            CHK(asem_post(&vaccinodrome->asemMutex));
             // on debloque le medecin pour qu'il s'arrete
             CHK(asem_post(&box->demandeVaccin));
         }
+
+
     } else
     {
         for (int i = 0; i < vaccinodrome->currPatientWaiting; ++i)
-            asem_post(&vaccinodrome->waitingRoom);
+            CHK(asem_post(&vaccinodrome->waitingRoom));
     }
 
     // On attend que tous les médecins se ferment
