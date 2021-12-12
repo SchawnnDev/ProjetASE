@@ -9,7 +9,8 @@
 #define CHK(op)         do { if ((op) == -1) { raler (#op); } } while (0)
 #define NCHK(op)        do { if ((op) == NULL) { raler (#op); } } while (0)
 #define TCHK(op)        do { if ((errno=(op)) > 0) { raler (#op); } } while (0)
-#define PERR(str, debug) do { if(debug == 1) adebug(2, str); else raler(str); } while(0)
+#define PERR(str, debug) do { if(debug == 1) adebug(2, str); \
+else raler(str); } while(0)
 #define MAX_NOM_PATIENT 11
 #include "asem.h"
 
@@ -75,7 +76,8 @@ vaccinodrome_t* get_vaccinodrome(int* err);
 /**
  * Crée l'espace de mémoire partagée pour la structure vaccinodrome_t
  * en fonction du nombre de medecins et sieges
- * @param err S'il y'a une erreur, err=-1 (err=-2 si vaccinodrome non existant) sinon err=0
+ * @param err S'il y'a une erreur, err=-1 (err=-2 si vaccinodrome non existant)
+ *            sinon err=0
  * @param medecins Nombre de médecins prédefini
  * @param sieges Nombre de sièges prédefini
  * @return Un pointeur vers la structure vaccinodrome crée en mémoire partagée

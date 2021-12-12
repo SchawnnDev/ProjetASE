@@ -49,7 +49,8 @@ int main (int argc, char *argv []) {
     if(asem_init(&vaccinodrome->waitingRoom, "WaitingRoom", 1, n) == -1)
         raler("asem_init\n");
 
-    if(asem_init(&vaccinodrome->medecinDisponibles, "medecinDisponibles", 1, 0) == -1)
+    if(asem_init(&vaccinodrome->medecinDisponibles, "medecinDisponibles",
+                 1, 0) == -1)
         raler("asem_init\n");
 
     if(asem_init(&vaccinodrome->asemMutex, "asemMutex", 1, 1) == -1)

@@ -5,7 +5,7 @@
 #include <string.h>
 #include "shm.h"
 
-void raler(const char *msg)                 // Une fonction simple pour les erreurs
+void raler(const char *msg) // Une fonction simple pour les erreurs
 {
     perror(msg);
 }
@@ -14,7 +14,8 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins, int sieges)
 {
     int fd;
     vaccinodrome_t *vaccinodrome;
-    const int debug = *err == 0; // Si err != 0, alors on utilise raler() sinon adebug()
+    const int debug = *err == 0;
+    // Si err != 0, alors on utilise raler() sinon adebug()
 
     *err = -1;
     errno = 0;
@@ -34,7 +35,8 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins, int sieges)
         return NULL;
     }
 
-    ssize_t totalSize = sizeof(vaccinodrome_t) + medecins * sizeof(box_t) + sieges * sizeof(siege_t);
+    ssize_t totalSize = sizeof(vaccinodrome_t)
+            + medecins * sizeof(box_t) + sieges * sizeof(siege_t);
 
     adebug(99, "total size = %d", totalSize);
 
@@ -44,7 +46,8 @@ vaccinodrome_t *create_vaccinodrome(int *err, int medecins, int sieges)
         return NULL;
     }
 
-    vaccinodrome = mmap(NULL, totalSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    vaccinodrome = mmap(NULL, totalSize,
+                        PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (vaccinodrome == MAP_FAILED)
     {
@@ -68,7 +71,8 @@ vaccinodrome_t *get_vaccinodrome(int *err)
     int fd;
     vaccinodrome_t *vaccinodrome;
     struct stat stat;
-    const int debug = *err == 0; // Si err != 0, alors on utilise raler() sinon adebug()
+    const int debug = *err == 0;
+    // Si err != 0, alors on utilise raler() sinon adebug()
 
     *err = -1;
     errno = 0;
@@ -97,7 +101,8 @@ vaccinodrome_t *get_vaccinodrome(int *err)
 
     adebug(99, "fstat size = %d", stat.st_size);
 
-    vaccinodrome = mmap(NULL, stat.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    vaccinodrome = mmap(NULL, stat.st_size,
+                        PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (vaccinodrome == MAP_FAILED)
     {

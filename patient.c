@@ -54,7 +54,8 @@ box_t* chercher_box(vaccinodrome_t* vaccinodrome)
     if (box == NULL)
     {
         CHK(asem_post(&vaccinodrome->asemMutex));
-        adebug(2, "Aucun medecin n'a ete trouve, alors qu'il y'avait une place libre.");
+        adebug(2, "Aucun medecin n'a ete trouve,"
+                  " alors qu'il y'avait une place libre.");
         raler("Impossible.");
     }
 
@@ -104,14 +105,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    fprintf(stdout, "Le patient %s attend une place dans la salle d'attente.\n", nom);
+    fprintf(stdout, "Le patient %s attend une place"
+                    " dans la salle d'attente.\n", nom);
 
     CHK(asem_wait(&vaccinodrome->waitingMutex));
     vaccinodrome->currPatientWaiting++;
     CHK(asem_post(&vaccinodrome->waitingMutex));
 
     // On attend qu'une place se libere dans la salle d'attente
-    asem_wait(&vaccinodrome->waitingRoom);
+    CHK(asem_wait(&vaccinodrome->waitingRoom));
 
     CHK(asem_wait(&vaccinodrome->waitingMutex));
     vaccinodrome->currPatientWaiting--;
@@ -120,7 +122,7 @@ int main(int argc, char *argv[])
     // vaccinodrome fermé
     if(vaccinodrome->statut == 1)
     {
-        adebug(99, "Vaccinodrome ferme. Patient ne peut pas rentrer.2");
+        adebug(99, "Vaccinodrome ferme. Patient ne peut pas rentrer.");
         return 1;
     }
 
@@ -130,7 +132,7 @@ int main(int argc, char *argv[])
     fprintf(stdout, "patient %s siege %d\n", nom, siege->siege);
 
     // On attend un medecin disponible
-    asem_wait(&vaccinodrome->medecinDisponibles);
+    CHK(asem_wait(&vaccinodrome->medecinDisponibles));
 
     // Un medecin est disponible !
     box_t* box = chercher_box(vaccinodrome);
@@ -140,20 +142,20 @@ int main(int argc, char *argv[])
     CHK(asem_post(&vaccinodrome->siegeMutex));
 
     // Une place est disponible dans la salle d'attente
-    asem_post(&vaccinodrome->waitingRoom);
+    CHK(asem_post(&vaccinodrome->waitingRoom));
 
     snprintf(box->patient, MAX_NOM_PATIENT, "%s", nom);
 
     // On demande le vaccin au medecin
-    asem_post(&box->demandeVaccin);
+    CHK(asem_post(&box->demandeVaccin));
 
     // On attend que le medecin nous vaccine
-    asem_wait(&box->termineVaccin);
+    CHK(asem_wait(&box->termineVaccin));
 
-    // Le client est vaccine !
+    // Le patient est vaccine !
 
     fprintf(stdout, "patient %s medecin %d\n", nom, box->medecin);
-    adebug(1, "Client vaccine!");
+    adebug(1, "Patient vaccine!");
 
     return 0;
 }

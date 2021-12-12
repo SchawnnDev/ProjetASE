@@ -42,6 +42,12 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    if(vaccinodrome->statut == 1)
+    {
+        fprintf(stderr, "Vaccinodrome ferme.\n");
+        return -1;
+    }
+
     if (vaccinodrome->currMedecins + 1 > vaccinodrome->nbMedecins)
     {
         fprintf(stderr, "Capacitee de medecins depassee.\n");
@@ -76,35 +82,38 @@ int main(int argc, char *argv[])
     {
         TCHK(asem_wait(&box->demandeVaccin));
 
-        if (box->status == 2 && check_fermeture(vaccinodrome) == 1) // Si aucun siege n'est occupé. on arrête
+        if (box->status == 2 && check_fermeture(vaccinodrome) == 1)
+            // Si aucun siege n'est occupé. on arrête
         {
             adebug(99, "Le medecin %d est parti.", numMedecin);
             // Le medecin peut partir, il n'y a plus aucun patient
             break;
         }
 
-        fprintf(stdout, "medecin %d vaccine %s\n", numMedecin, box->patient);
+        fprintf(stdout, "medecin %d vaccine %s\n",
+                numMedecin, box->patient);
 
         adebug(0, "Usleep : %d ms", vaccinodrome->temps);
 
         CHK(usleep(vaccinodrome->temps * 1000));
 
         // Vaccin terminé, on peut lacher le patient
-        asem_post(&box->termineVaccin);
+        CHK(asem_post(&box->termineVaccin));
 
         CHK(asem_wait(&vaccinodrome->asemMutex));
         box->status = 0; // Box a nouveau disponible
         memset(&box->patient, 0, MAX_NOM_PATIENT);
         CHK(asem_post(&vaccinodrome->asemMutex));
 
-        if (check_fermeture(vaccinodrome) == 1) // Si aucun siege n'est occupé. on arrête
+        if (check_fermeture(vaccinodrome) == 1)
+            // Si aucun siege n'est occupé. on arrête
         {
             adebug(99, "Le medecin %d est parti.", numMedecin);
             // Le medecin peut partir, il n'y a plus aucun patient
             break;
         }
 
-        asem_post(&vaccinodrome->medecinDisponibles);
+        CHK(asem_post(&vaccinodrome->medecinDisponibles));
     }
 
     CHK(asem_wait(&vaccinodrome->asemMutex));
