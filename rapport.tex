@@ -49,14 +49,13 @@
   \newpage
 
   \section{Introduction}
-  \\~\\
-  L'objectif de ce TP à rendre est d'implémenter un vaccinodrome qui prend en charge des patients, venant se faire
-  vacciner par des médecins. Ces médecins vaccinent les patients dans des box. Un patient attendra à l'extérieur jusqu'à
-  ce qu'il y ait une place dans la salle d'attente. Dans celle-ci il attendra sur un siège numéroté, qu'un médecin soit disponible. Lorsqu'un médecin sera disponible, il entrera dans le box pour se faire vacciner, puis partira. Les médecins attendrons jusqu'à la fermeture du vaccinodrome pour partir.
 
-  Dans cette implémentation, il a été choisi de laisser le patient choisir un box disponible.
+  L'objectif de ce TP est d'implémenter un vaccinodrome qui prend en charge des patients, venant se faire vacciner par des médecins. Les médecins vaccinent les patients dans des box, ces derniers attendront donc à l'extérieur jusqu'à
+  ce qu'il y ait une place dans la salle d'attente. Une fois dans la salle d'attente le patient attendra sur un siège numéroté qu'un médecin soit disponible. Lorsqu'un médecin sera disponible, le patient entrera dans le box pour se faire vacciner, puis partira une fois l'action réalisée. Les médecins attendrons jusqu'à la fermeture du vaccinodrome pour partir.
+
+  Dans cette implémentation, nous avons laisser le patient choisir un box disponible.
   Lorsqu'un médecin est disponible, le patient en sera informé et cherchera le box disponible.
-  Il monopolisera le box pour toute la durée de la vaccination. Une fois le box monopolisé, le patient notifiera le médecin qu'il veut être vacciné, puis attendra que le médecin le laisse partir. En partant le box sera libéré et un nouvelle notification de disponibilité du médecin sera envoyée aux patients.
+  Une fois le box monopolisé, le patient notifiera le médecin qu'il veut être vacciné et restera dans le box pour toute la durée de la vaccination, en attendant que le médecin le laisse partir. En partant, le box sera libéré et un nouvelle notification de disponibilité du médecin sera envoyée aux patients.
   \newpage
   \section{Structure de données}
 
@@ -64,8 +63,7 @@
 
   J'ai utilisé un total de 3 structures, toutes font partie de la mémoire partagée.
 
-  La structure principale s'appelle vaccinodrome\_t et contient toutes les données utiles,
-  sémaphores, variables globales.
+  La structure principale s'appelle vaccinodrome\_t et contient toutes les données utiles, sémaphores, et variables globales.
 
   \begin{tabularx}{\linewidth}{|l|l|l|X|}
     \hline
@@ -133,8 +131,8 @@
 
   \subsection{Arrivée d'un patient}\label{arrivee-patient}
 
-  Lorsqu'un patient arrive, on vérifie directement si le vaccinodrome est ouvert. Si ce n'est pas le cas, on arrête le programme. Puis on attend une place dans la salle d'attente. Quand une place est libre on vérifie a nouveau si le vaccinodrome est ouvert (et on arrête le programme si ça ne passe pas). Sachant qu'une place s'est libérée, on cherche le siège disponible et on l'affecte au patient.
-  Finalement, on attends qu'un box (médecin) soit libre.
+  Lorsqu'un patient arrive, on vérifie directement si le vaccinodrome est ouvert. Si ce n'est pas le cas, on arrête le programme. Ensuite, on attend qu'une place dans la salle d'attente se libère et lorsqu'une place est libre on vérifie à nouveau si le vaccinodrome est ouvert (et on arrête le programme si ça ne passe pas). Sachant qu'une place s'est libérée, on cherche le siège disponible et on l'affecte au patient.
+  Finalement, on attend qu'un box (médecin) soit libre.
 
   \begin{enumerate}
     \item Les objets impliqués sont :
@@ -149,7 +147,7 @@
       statut & int & Statut de fermeture/ouverture du vaccinodrome (0 ouvert, 1 fermé) \\ \hline%
     \end{tabularx}
 
-    \item Pour l'arrivée d'un patient, seul est exécuté le programme "patient".
+    \item Pour l'arrivée d'un patient seul, on exécute le programme "patient".
 
     \begin{verbatim}
 // Ce code est exécuté par le patient
@@ -191,7 +189,7 @@ P (medecinDisponibles)
   \subsection{Arrivée d'un médecin}
 
   Lorsqu'un médecin arrive, on vérifie directement si le vaccinodrome est ouvert. Si ce n'est pas le cas, on arrête le programme. Puis on vérifie s'il n'y a pas déjà trop de médecins (si oui, on arrête le programme). On incrémente le nombre de médecins actuels, puis on initialise le box.
-  Finalement on notifie les patients que le médecin est disponible et on attends une demande de vaccination.
+  Finalement on notifie les patients que le médecin est disponible et on attend une demande de vaccination.
 
   \begin{enumerate}
     \item Les objets impliqués sont :
@@ -242,14 +240,14 @@ While :
 
     \end{verbatim}
 
-    \item Sachant que le patient s'occupe de trouver un box disponible, il faut impérativement bloquer l'accès à la liste des boxes avant que le box soit bien initialisé, (sinon il pourrait y avoir des accès concurrents à ce box non initialisé)
+    \item Sachant que le patient s'occupe de trouver un box disponible, il faut impérativement bloquer l'accès à la liste des boxes avant que le box soit bien initialisé, (sinon il pourrait y avoir des accès concurrents à ce box non initialisé).
   \end{enumerate}
   \newpage
 
   \subsection{Interactions entre patients et médecins}
 
 
-  Lorsqu'un médecin est disponible, le patient va chercher et s'attribuer un box disponible. Il va relâcher son siège et notifier aux autres patients qu'une place dans la salle d'attente s'est libérée. Puis il va demander au médecin de le vacciner, et attendre jusqu'à ce qu'il le relâche. Le médecin va donc se réveiller et vérifier la raison de son réveil (s'il doit s'arrêter ou parce qu'un patient la révéillé). Puis il va vacciner le patient, et le relâcher. Finalement, il remet son box en disponibilité et notifie tous les patients qu'il est à nouveau disponible, avant d'attendre la prochaine demande de vaccination.
+  Lorsqu'un médecin est disponible, le patient va chercher et s'attribuer un box disponible. Il va quitter son siège et notifier aux autres patients qu'une place dans la salle d'attente s'est libérée. Puis il va demander au médecin de le vacciner, et attendre jusqu'à ce qu'il le relâche. Le médecin va donc se réveiller et vérifier la raison de son réveil (s'il doit s'arrêter ou parce qu'un patient la révéillé). Puis il va vacciner le patient, et le relâcher. Finalement, il remet son box en disponibilité et notifie tous les patients qu'il est à nouveau disponible, avant d'attendre la prochaine demande de vaccination.
 
   \begin{enumerate}
     \item Les objets impliqués sont :
@@ -509,6 +507,8 @@ V (fermer)
   \includegraphics[scale=0.8]{mempartagee.png}
   \captionof{figure}{Schéma de la mémoire partagée}
   \label{fig1}
+
+  De plus, j'aurais sûrement dû ajouter une section critique au niveau de la variable statut du vaccinodrome.
 
   \section{Conclusion}
 
